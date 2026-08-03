@@ -1,3 +1,4 @@
+2c7a2b61cc2f52747f3872e7cc3f7938ea59fbc9306e46e36d3c9b3ec1a463a3  ./assets/example.svg
 f06c162c75c468970ea1eff2b56ef5ab235b50ce55d9de09f1c1ae73fb76d281  ./DATA_CARD.md
 d84d764671236e27ca7802043ba5ea2f5a2570d1dc1bf495975c7bb5dc3f1ded  ./data/four_hop/musique/ar.jsonl
 24f6cbfdd3bb64abce316fe6312870b2f76482f9486c2f4c92316ccf8667f815  ./data/four_hop/musique/en.jsonl
@@ -22,8 +23,10 @@ a5a0a45a5209b31cd82484e95e7bc761165cc075763094755666bc19072eb0ea  ./data/two_hop
 6735d3428431a0f9a215e260b20552426ceeb725a245ead0ab6a18c15e76a7df  ./examples/quickstart.py
 62ad41f90ac0c4b47a4125242b55f8193f9d8d7fb6eac7eae25df549975bd733  ./.gitignore
 9a81573d805035b901064b93ba59898ca0fecfe89f9af571cfba67e0344dab68  ./LICENSES/README.md
-ec9b716deb6fab25e1e14903f1e78eb4f58ea33eb2ee6c226b2926686e44a0c0  ./README.md
+31b9c7315c807acefd6fc3027328f3a9c11383badcbd1f327ffc645e2620d7f8  ./README.md
 71b12b6ee6d63725384617ce115ba2f9d5113cfb134d43bb2b38076315021b97  ./scripts/build.py
 026d36304ed0e3776a9718ee1c0e1178f64565ebd8d00b7a3c3dafc9d33a6f31  ./scripts/make_combined.py
 b3060168712e13696c39a2dedb2388e4658d3efe568445e8eafda3aec190d1df  ./scripts/make_cross_lingual.py
+c0a9d7630c690083f44244f96bb3ff47146844a6779ac4f9b97b3ba8ab8f80f1  ./scripts/make_figure.py
+c436bcd660e584f7fc9261a770fd644ebd94ef9fb72eaccf3eec8c2472b3a5a8  ./scripts/__pycache__/make_figure.cpython-310.pyc
 3aeb3ff2bf4fac2f649cf16bb9f52721f744236daef441f34fe894ee17bf5610  ./scripts/validate.py

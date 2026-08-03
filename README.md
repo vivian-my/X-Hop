@@ -1,6 +1,6 @@
 <div align="center">
 
-# XHop
+# XHop: Multilingual Multi-Hop Reasoning Dataset
 
 **Cross-lingual multi-hop question answering, one hop at a time.**
 
@@ -17,18 +17,33 @@
 
 ---
 
-Multi-hop QA in **English, French, Russian, Arabic, and Chinese**, built so the language
-of the query and the language of *each individual supporting passage* can be varied
-independently.
+**XHop** extends two English multi-hop question-answering datasets,
+[HotpotQA](https://hotpotqa.github.io/) and [MuSiQue](https://github.com/stonybrooknlp/musique),
+to five languages: English, Chinese, French, Arabic, and Russian. By varying the language
+of each supporting document, **XHop** enables fine-grained evaluation of multilingual
+multi-hop reasoning, revealing how model performance changes when the evidence required to
+answer a question is distributed across languages. As illustrated below, the model must
+integrate information from two documents written in different languages to derive the
+final answer.
 
-That independence is the point. When a model gets a question in English, the bridging
-evidence in Russian and the answer-bearing evidence in Chinese, any failure can be
-attributed to a **specific hop** rather than to "the setting was multilingual."
+<div align="center">
+<img alt="A 2-hop XHop example. An English question, one context block holding a French bridging passage that names Briana Corrigan and a Chinese answer-bearing passage identifying her as a Northern Irish singer, and the English answer." src="assets/example.svg" width="860">
+</div>
+
+<div align="center">
+<sub>Record <code>hotpotqa_766</code>, unmodified from <code>data/two_hop/hotpotqa/</code>.
+Both hops arrive in a single context, exactly as the model receives them; the
+parenthesised italics give the English meanings and are not part of that input.
+Neither passage answers the question alone — the first names the singer, the second gives
+her nationality, and they are written in different scripts.</sub>
+</div>
 
 The five language files in each split are **positionally aligned** — line *i* is the same
 item in all five. A cross-lingual condition is assembled at load time by drawing each
 passage from a different language file, so 5 files yield the full 5×5 grid and no
-combination has to be shipped.
+combination has to be shipped. Because the language of the query and of *each individual
+hop* varies independently, a failure can be attributed to a **specific hop** rather than
+to "the setting was multilingual."
 
 ## Splits
 
@@ -148,7 +163,9 @@ Filter on `chain_ok` before chaining `sub_q1` → `sub_q2`; filter on
 ```
 data/          the dataset
 scripts/       build.py · validate.py · make_cross_lingual.py · make_combined.py
+               make_figure.py — regenerates assets/example.svg from the data
 examples/      quickstart.py
+assets/        the README figure
 LICENSES/      per-source terms
 DATA_CARD.md   provenance, limitations, known defects
 ```
@@ -180,6 +197,6 @@ in a way that conflates *factual correctness* with *answering in the expected la
   title  = {XHop: Cross-lingual Multi-Hop Question Answering},
   author = {CHANGE-ME},
   year   = {2026},
-  url    = {https://github.com/vivianmy/XHop}
+  url    = {https://github.com/vivian-my/XHop}
 }
 ```

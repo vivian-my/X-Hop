@@ -30,13 +30,7 @@ final answer.
 <img alt="A 2-hop XHop example. An English question, one context block holding a French bridging passage that names Briana Corrigan and a Chinese answer-bearing passage identifying her as a Northern Irish singer, and the English answer." src="assets/example.svg" width="860">
 </div>
 
-<div align="center">
-<sub>Record <code>hotpotqa_766</code>, unmodified from <code>data/two_hop/hotpotqa/</code>.
-Both hops arrive in a single context, exactly as the model receives them; the
-parenthesised italics give the English meanings and are not part of that input.
-Neither passage answers the question alone — the first names the singer, the second gives
-her nationality, and they are written in different scripts.</sub>
-</div>
+
 
 The five language files in each split are **positionally aligned** — line *i* is the same
 item in all five. A cross-lingual condition is assembled at load time by drawing each

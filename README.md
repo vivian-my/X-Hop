@@ -41,17 +41,24 @@ to "the setting was multilingual."
 
 ## Splits
 
-| Split | Source | Records/lang | Hops | `hop_seq` verified | Decomposition |
-|---|---|---:|:---:|:---:|:---:|
-| `two_hop/musique` | MuSiQue | 627 | 2 | yes | — |
-| `two_hop/hotpotqa` | HotpotQA | 176 | 2 | yes | yes |
-| `three_hop/musique` | MuSiQue | 327 | 3 | **no** | — |
-| `four_hop/musique` | MuSiQue | 182 | 4 | **no** | — |
+| Number of hops | Amount | Sources | Decomposed SubQs | Languages included |
+|:---:|---:|---|:---:|---|
+| **2** | 803 | MuSiQue 627 · HotpotQA 176 | 176 | English · French · Russian · Arabic · Chinese |
+| **3** \* | 327 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
+| **4** \* | 182 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
 
-6,560 records total (1,312 per language). JSONL, UTF-8, one record per line.
+*Amount* is records **per language**: 1,312 per language, **6,560 total**. JSONL, UTF-8,
+one record per line. Decomposed sub-questions exist only for the HotpotQA half of the
+2-hop split, where each question comes with a gold split into two single-hop questions.
+
+<sub>\* `hop_seq` is **not verified** at 3 and 4 hops — see
+[`hop_seq`](#hop_seq) before using it for per-hop analysis.</sub>
 
 ```
-data/<split>/<source>/{en,fr,ru,ar,zh}.jsonl
+data/two_hop/musique/{en,fr,ru,ar,zh}.jsonl
+data/two_hop/hotpotqa/{en,fr,ru,ar,zh}.jsonl
+data/three_hop/musique/{en,fr,ru,ar,zh}.jsonl
+data/four_hop/musique/{en,fr,ru,ar,zh}.jsonl
 ```
 
 ## Quick start

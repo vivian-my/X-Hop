@@ -62,7 +62,8 @@ en, ru, zh = (load("two_hop", "hotpotqa", L) for L in ("en", "ru", "zh"))
 
 # Files are aligned, so line i is the same question in every language.
 i = 0
-q = en[i]
+# English Two-Hop Query
+question = en[i]
 bridge_pos, answer_pos = q["hop_seq"]        # reasoning order -> positions in `answers`
 
 # Query in English, bridging hop in Russian, answer-bearing hop in Chinese.
@@ -71,15 +72,6 @@ passages[bridge_pos] = ru[i]["answers"][bridge_pos]
 passages[answer_pos] = zh[i]["answers"][answer_pos]
 ```
 
-`examples/quickstart.py` runs this end to end. `scripts/make_cross_lingual.py` does it for
-whole splits, including the full grid:
-
-```bash
-python scripts/make_cross_lingual.py --split two_hop --source musique \
-    --query en --hops ru zh --out cell.jsonl
-python scripts/make_cross_lingual.py --split two_hop --source musique \
-    --query en --grid --out-dir cells/          # all 25 passage combinations
-```
 
 ## Record schema
 
@@ -103,9 +95,8 @@ python scripts/make_cross_lingual.py --split two_hop --source musique \
   "sub_q1": {"question": "...", "answer": "Shirley Temple"},   // null on MuSiQue
   "sub_q2": {"question": "...",
              "answer": "Chief of Protocol",   // == `answer`, normalized
-             "answer_raw": null},             // original translation, if it differed
-  "bridge_match": "exact",         // exact|normalized|inflected|latin_untranslated|absent
-  "chain_ok": true
+             "answer_raw": null}
+  
 }
 ```
 
@@ -123,10 +114,57 @@ of the answer-bearing hop than the bridging one.
 > went through a hop-ordering pass. Do not use it for per-hop analysis at 3 and 4 hops
 > without establishing the ordering yourself.
 
-### Question decomposition
+### Two-Hop Question decomposition
 
 The 176 HotpotQA records carry a gold decomposition into two single-hop questions, stored
 as fields on the record so questions and passages cannot drift apart.
+
+To load — e.g. the French decomposition:
+
+```python
+import json
+
+hotpot = [json.loads(line) for line
+          in open("data/two_hop/hotpotqa/fr.jsonl", encoding="utf-8")]
+
+r = hotpot[0]
+r["question"]              # "Quel poste gouvernemental occupait la femme qui
+                           #  interprétait Corliss Archer dans le film Kiss and Tell ?"
+
+r["sub_q1"]["question"]    # hop 1 — find the bridge entity
+                           # "quelle femme a incarné Corliss Archer dans le film
+                           #  Kiss and Tell ?"
+r["sub_q1"]["answer"]      # "Shirley Temple"  <- the bridge entity
+
+r["sub_q2"]["question"]    # hop 2 — asks about that entity
+                           # "Quel poste gouvernemental occupait Shirley Temple ?"
+r["sub_q2"]["answer"]      # "Chef du Protocole"  == r["answer"], always
+
+# Feeding sub_q1's answer into sub_q2 only works where the bridge survived
+# translation. Filter on chain_ok; use bridge_match == "exact" if you need to
+# substitute the string verbatim rather than just check it is present.
+usable = [x for x in hotpot if x["chain_ok"]]              # 163 of 176 in French
+verbatim = [x for x in hotpot if x["bridge_match"] == "exact"]   # 113 of 176
+```
+
+MuSiQue records carry `"sub_q1": null`, so `[x for x in rows if x["sub_q1"]]` selects the
+decomposable half of the 2-hop split.
+
+Because the language files are aligned, the sub-questions can be drawn from one language
+and the passages from another — a decomposed question in English against Chinese evidence,
+for instance:
+
+```python
+en = [json.loads(l) for l in open("data/two_hop/hotpotqa/en.jsonl", encoding="utf-8")]
+zh = [json.loads(l) for l in open("data/two_hop/hotpotqa/zh.jsonl", encoding="utf-8")]
+
+i = 0
+assert en[i]["id"] == zh[i]["id"]          # same record, guaranteed by alignment
+bridge_pos, answer_pos = en[i]["hop_seq"]
+
+sub_q1 = en[i]["sub_q1"]["question"]       # English sub-question
+passage = zh[i]["answers"][bridge_pos]     # Chinese passage that answers it
+```
 
 Sub-questions were translated independently per language, which broke the link between
 them. Two repairs are applied at build time, neither rewriting translated text:

@@ -32,18 +32,13 @@ final answer.
 
 
 
-The five language files in each split are **positionally aligned** — line *i* is the same
-item in all five. A cross-lingual condition is assembled at load time by drawing each
-passage from a different language file, so 5 files yield the full 5×5 grid and no
-combination has to be shipped. Because the language of the query and of *each individual
-hop* varies independently, a failure can be attributed to a **specific hop** rather than
-to "the setting was multilingual."
 
-## Splits
+
+## Overview of XHop
 
 | Number of hops | Amount | Sources | Decomposed SubQs | Languages included |
 |:---:|---:|---|:---:|---|
-| **2** | 803 | MuSiQue 627 · HotpotQA 176 | 176 | English · French · Russian · Arabic · Chinese |
+| **2** | 803 | MuSiQue (627) · HotpotQA (176) | HotpotQA 176 | English · French · Russian · Arabic · Chinese |
 | **3** \* | 327 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
 | **4** \* | 182 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
 
@@ -51,15 +46,10 @@ to "the setting was multilingual."
 one record per line. Decomposed sub-questions exist only for the HotpotQA half of the
 2-hop split, where each question comes with a gold split into two single-hop questions.
 
-<sub>\* `hop_seq` is **not verified** at 3 and 4 hops — see
-[`hop_seq`](#hop_seq) before using it for per-hop analysis.</sub>
 
-```
-data/two_hop/musique/{en,fr,ru,ar,zh}.jsonl
-data/two_hop/hotpotqa/{en,fr,ru,ar,zh}.jsonl
-data/three_hop/musique/{en,fr,ru,ar,zh}.jsonl
-data/four_hop/musique/{en,fr,ru,ar,zh}.jsonl
-```
+
+
+
 
 ## Quick start
 

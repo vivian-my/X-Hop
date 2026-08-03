@@ -34,17 +34,15 @@ final answer.
 
 
 
-## Overview of XHop
+## Splits
 
-| Number of hops | Amount | Sources | Decomposed SubQs | Languages included |
+| Number of hops | Amount | Sources |  Languages included |
 |:---:|---:|---|:---:|---|
-| **2** | 803 | MuSiQue (627) · HotpotQA (176) | HotpotQA 176 | English · French · Russian · Arabic · Chinese |
-| **3** \* | 327 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
-| **4** \* | 182 | MuSiQue | — | English · French · Russian · Arabic · Chinese |
+| **2** | 803 | MuSiQue (627) · HotpotQA (176) | English · French · Russian · Arabic · Chinese |
+| **3**  | 327 | MuSiQue |  English · French · Russian · Arabic · Chinese |
+| **4**  | 182 | MuSiQue |  English · French · Russian · Arabic · Chinese |
 
-*Amount* is records **per language**: 1,312 per language, **6,560 total**. JSONL, UTF-8,
-one record per line. Decomposed sub-questions exist only for the HotpotQA half of the
-2-hop split, where each question comes with a gold split into two single-hop questions.
+
 
 
 

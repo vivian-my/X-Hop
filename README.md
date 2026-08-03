@@ -37,7 +37,7 @@ final answer.
 ## Splits
 
 | Number of hops | Amount | Sources |  Languages included |
-|:---:|---:|---|:---:|---|
+|:---:|---:|:---:|---|
 | **2** | 803 | MuSiQue (627) · HotpotQA (176) | English · French · Russian · Arabic · Chinese |
 | **3**  | 327 | MuSiQue |  English · French · Russian · Arabic · Chinese |
 | **4**  | 182 | MuSiQue |  English · French · Russian · Arabic · Chinese |

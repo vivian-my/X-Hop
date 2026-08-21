@@ -1,18 +1,8 @@
 <div align="center">
 
-# XHop: Multilingual Multi-Hop Reasoning Dataset
+# Do Language Models Reason Across Languages? 
 
-**Cross-lingual multi-hop question answering, one hop at a time.**
-
-[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-FFD21E?style=for-the-badge)](https://huggingface.co/datasets/CHANGE-ME/XHop)
-[![Website](https://img.shields.io/badge/Website-XHop-4A90D9?style=for-the-badge&logo=googlechrome&logoColor=white)](https://CHANGE-ME.github.io/XHop)
-[![Paper](https://img.shields.io/badge/Paper-arXiv-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/CHANGE-ME)
-
-[![Languages](https://img.shields.io/badge/languages-5-3d5a80)](#splits)
-[![Records](https://img.shields.io/badge/records-6%2C560-3d5a80)](#splits)
-[![Hops](https://img.shields.io/badge/hops-2%20%7C%203%20%7C%204-3d5a80)](#splits)
-[![License](https://img.shields.io/badge/license-per%20source-6E7781)](LICENSES/)
-
+**X-Hop: Multilingual Multi-Hop Dataset.**
 </div>
 
 ---

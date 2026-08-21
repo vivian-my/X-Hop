@@ -63,13 +63,20 @@ en, ru, zh = (load("two_hop", "hotpotqa", L) for L in ("en", "ru", "zh"))
 # Files are aligned, so line i is the same question in every language.
 i = 0
 # English Two-Hop Query
-question = en[i]
+q = en[i]
 bridge_pos, answer_pos = q["hop_seq"]        # reasoning order -> positions in `answers`
 
 # Query in English, bridging hop in Russian, answer-bearing hop in Chinese.
 passages = [None, None]
 passages[bridge_pos] = ru[i]["answers"][bridge_pos]
 passages[answer_pos] = zh[i]["answers"][answer_pos]
+
+# Join sentences only when preparing the two paragraphs shown to the model.
+paragraphs = [
+    " ".join(sentence.strip() for sentence in passages[pos]["sentences"])
+    for pos in q["hop_seq"]
+]
+assert len(paragraphs) == 2
 ```
 
 
@@ -84,35 +91,30 @@ passages[answer_pos] = zh[i]["answers"][answer_pos]
   "question": "...",
   "answer": "Chief of Protocol",
 
-  "answers":     [[title, [sentence, ...]], ...],   // the n gold passages
+  "answers": [                                  // the n gold passages
+    {
+      "title": "...",
+      "sentences": ["...", "..."],
+      "supporting_sentence_indices": [0]
+    }
+  ],
   "non_answers": [[title, [sentence, ...]], ...],   // distractors
-  "supporting_facts": [[title, sentence_index], ...],
 
   "hop_seq": [1, 0],               // reasoning order -> indices into `answers`;
                                    // hop 1 = bridging, hop n = answer-bearing
-  "hop_seq_verified": true,        // false => placeholder order, see below
 
   "sub_q1": {"question": "...", "answer": "Shirley Temple"},   // null on MuSiQue
   "sub_q2": {"question": "...",
-             "answer": "Chief of Protocol",   // == `answer`, normalized
-             "answer_raw": null}
+             "answer": "Chief of Protocol"}
   
 }
 ```
 
-Every record carries 20 passages total (gold + distractors), so more hops means
-proportionally fewer distractors.
-
-### `hop_seq`
-
-`answers[hop_seq[0]]` is the bridging hop; `answers[hop_seq[-1]]` is the answer-bearing
-one. The distinction carries the finding — models are far more sensitive to the language
-of the answer-bearing hop than the bridging one.
-
-> **`hop_seq_verified` is `false` for `three_hop` and `four_hop`.** There `hop_seq` is the
-> identity order and records *file order, not verified reasoning order* — those files never
-> went through a hop-ordering pass. Do not use it for per-hop analysis at 3 and 4 hops
-> without establishing the ordering yourself.
+Sentence-level evidence annotations live inside their answer passage, so they
+remain attached when passages are translated, reordered, or mixed across languages.
+For model input, concatenate each passage's `sentences` and use `hop_seq` to put
+the resulting paragraphs in reasoning order. Never merge across answer positions,
+even when both passages have the same title.
 
 ### Two-Hop Question decomposition
 
@@ -167,20 +169,20 @@ passage = zh[i]["answers"][bridge_pos]     # Chinese passage that answers it
 ```
 
 Sub-questions were translated independently per language, which broke the link between
-them. Two repairs are applied at build time, neither rewriting translated text:
-`sub_q2.answer` is normalized to the record's `answer` (223 records; the original is kept
-in `answer_raw`), and the bridge entity is *classified* rather than substituted — Russian
-and Arabic inflect it (`Страсбург` → `Страсбура`), which is correct translation that a
-substring test wrongly rejects.
+them. At build time, `sub_q2.answer` is normalized to the record's `answer` (247 records;
+the original is kept in `answer_raw`), and inconsistent bridge translations are replaced
+with reviewed target-language questions. The bridge is then classified; Russian and Arabic
+can inflect it (`Страсбург` → `Страсбура`), which is correct translation that a substring
+test wrongly rejects.
 
 | `bridge_match` | en | fr | ru | ar | zh | |
 |---|---:|---:|---:|---:|---:|---|
-| `exact` | 172 | 113 | 65 | 87 | 83 | present verbatim |
+| `exact` | 173 | 125 | 79 | 101 | 133 | present verbatim |
 | `normalized` | 0 | 20 | 4 | 1 | 3 | case / diacritics / punctuation |
-| `inflected` | 0 | 30 | 96 | 82 | 40 | morphological or word-order variant |
-| `latin_untranslated` | 0 | 7 | 8 | 4 | 29 | English name retained — a defect |
-| `absent` | 4 | 6 | 3 | 2 | 21 | bridge missing — a defect |
-| **`chain_ok`** | **172** | **163** | **165** | **170** | **126** | first three kinds |
+| `inflected` | 0 | 28 | 90 | 71 | 37 | morphological or word-order variant |
+| `latin_untranslated` | 0 | 0 | 0 | 0 | 0 | English name retained — a defect |
+| `absent` | 3 | 3 | 3 | 3 | 3 | bridge omitted by the source decomposition |
+| **`chain_ok`** | **173** | **173** | **173** | **173** | **173** | first three kinds |
 
 Filter on `chain_ok` before chaining `sub_q1` → `sub_q2`; filter on
 `bridge_match == "exact"` if you need verbatim substitution.

@@ -15,7 +15,9 @@ for the query and for each supporting passage.
 Each output record keeps the query from the query-language file and takes hop k's
 gold passage from the k-th language given in --hops. Distractors follow the first
 hop language. `hop_seq` maps positions in `answers` to reasoning order, so hop 1
-is the bridging hop and hop N is the answer-bearing one.
+is the bridging hop and hop N is the answer-bearing one. Each answer passage
+contains its own `supporting_sentence_indices`, so its annotations travel with
+the passage when the language changes.
 """
 import argparse
 import itertools
@@ -23,6 +25,16 @@ import json
 from pathlib import Path
 
 CODES = ["en", "fr", "ru", "ar", "zh"]
+
+
+def paragraph_text(passage):
+    """Render one stored answer passage as the paragraph shown to a model."""
+    return " ".join(sentence.strip() for sentence in passage["sentences"])
+
+
+def ordered_paragraphs(record):
+    """Return controlled passages in reasoning order, not storage order."""
+    return [paragraph_text(record["answers"][pos]) for pos in record["hop_seq"]]
 
 
 def read(p):
@@ -52,7 +64,6 @@ def build_cell(langs, query, hops):
             "answer": q["answer"],
             "answers": answers,
             "non_answers": langs[hops[0]][i]["non_answers"],
-            "supporting_facts": q["supporting_facts"],
             "hop_seq": seq,
             "hop_seq_verified": q["hop_seq_verified"],
             "sub_q1": q["sub_q1"],

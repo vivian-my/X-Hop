@@ -13,13 +13,18 @@ def load(split, source, lang):
         return [json.loads(line) for line in f]
 
 
+def paragraph_text(passage):
+    """Join stored sentences only when preparing model input."""
+    return " ".join(sentence.strip() for sentence in passage["sentences"])
+
+
 # --- 1. a monolingual record -------------------------------------------------
 en = load("two_hop", "hotpotqa", "en")
 r = en[20]
 print(f"question : {r['question']}")
 print(f"answer   : {r['answer']}")
 # hop_seq maps reasoning order onto positions in `answers`
-bridge, final = (r["answers"][i][0] for i in r["hop_seq"])
+bridge, final = (r["answers"][i]["title"] for i in r["hop_seq"])
 print(f"hop 1 (bridging)      : {bridge}")
 print(f"hop 2 (answer-bearing): {final}")
 
@@ -48,7 +53,14 @@ mixed["answers"][f_pos] = zh[i]["answers"][f_pos]   # answer hop   -> Chinese
 
 assert en[i]["id"] == ru[i]["id"] == zh[i]["id"]    # alignment guarantee
 print(f"\ncross-lingual cell  query=en  hop1=ru  hop2=zh")
-print(f"  hop 1 title: {mixed['answers'][b_pos][0]}")
-print(f"  hop 2 title: {mixed['answers'][f_pos][0]}")
+print(f"  hop 1 title: {mixed['answers'][b_pos]['title']}")
+print(f"  hop 2 title: {mixed['answers'][f_pos]['title']}")
+
+# Exactly two controlled paragraphs, presented in reasoning order. Passages with
+# the same title remain separate because they occupy different answer positions.
+paragraphs = [paragraph_text(mixed["answers"][pos]) for pos in mixed["hop_seq"]]
+assert len(paragraphs) == 2
+print(f"  hop 1 paragraph: {paragraphs[0]}")
+print(f"  hop 2 paragraph: {paragraphs[1]}")
 
 # scripts/make_cross_lingual.py does this for whole splits, including the full grid.

@@ -265,7 +265,7 @@ def main():
     positions = e["hop_seq"]                       # [bridging, answer-bearing]
 
     def full(code, pos):
-        return " ".join(s.strip() for s in rec[code]["answers"][pos][1])
+        return " ".join(s.strip() for s in rec[code]["answers"][pos]["sentences"])
 
     def mark_up(text, lang, answering):
         """Highlight the bridge entity, plus the answer on the answering hop."""

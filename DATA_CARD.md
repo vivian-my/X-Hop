@@ -32,6 +32,16 @@ be attributed to a *specific hop* — in particular separating the **bridging** 
 Each record carries its gold passages (`answers`) plus distractors (`non_answers`),
 totalling 20 passages throughout.
 
+Each entry in `answers` contains `title`, `sentences`, and
+`supporting_sentence_indices`. Keeping sentence-level evidence annotations inside
+their passage makes them stable when passages are translated, reordered, or mixed
+across languages. There is no separate `supporting_facts` field.
+
+The stored sentence arrays preserve evidence boundaries. When constructing model
+input, join the sentences within each answer position into one paragraph, then use
+`hop_seq` to order those paragraphs by reasoning role. Passages are never merged
+across answer positions, including when their titles are identical.
+
 ## Provenance
 
 ### Source data
@@ -77,12 +87,11 @@ present for schema uniformity, not because it has been checked.
 ### 2. Decomposition chains, and what was repaired
 
 `sub_q1` and `sub_q2` were translated independently of each other per language, which broke
-the link between them. Two repairs were applied at build time; both are auditable and
-neither rewrites translated text.
+the link between them. The build now applies auditable, record-scoped repairs.
 
-**Repair 1 — `sub_q2.answer` normalized (223 records).** `sub_q2` asks the same thing as the
-full 2-hop question, so its answer equals the record's `answer` by construction (English:
-176/176). Independent translation diverged anyway, sometimes only in case
+**Repair 1 — `sub_q2.answer` normalized (247 records).** `sub_q2` asks the same thing as the
+full 2-hop question, so its answer equals the record's `answer` by construction. Independent
+translation diverged anyway, sometimes only in case
 (`Начальник Протокола` / `Начальник протокола`), sometimes in word choice
 (`игровой автомат с шариками` / `пинбольный автомат`). `sub_q2.answer` is set to the
 record's `answer` — canonical because it is what scoring compares against — and the original
@@ -90,34 +99,45 @@ kept in `sub_q2.answer_raw`.
 
 | repaired | en | fr | ru | ar | zh |
 |---|---:|---:|---:|---:|---:|
-| | 0 | 38 | 61 | 68 | 56 |
+| | 5 | 44 | 66 | 71 | 61 |
 
-**Repair 2 — bridge entity classified, not rewritten.** Exact containment is the wrong test
-outside English. Inspection showed most apparent failures were morphological
+**Repair 2 — inconsistent bridge translations corrected.** The unusable translated chains
+were reviewed against the English decomposition. English names left inside otherwise
+translated questions, corrupted transliterations, and inconsistent translations of the
+same entity were replaced with grammatical target-language questions. This makes 69
+previously unusable chains usable. The repairs live in `DECOMPOSITION_OVERRIDES` in
+`scripts/build.py`, so they are reproducible rather than one-off edits to generated JSONL.
+
+**Repair 3 — bridge entity classified.** Exact containment is still the wrong test outside
+English. Correct translations can be morphological
 (`Страсбург` → `Страсбура`, genitive) or word-order variants — correct translations that a
-substring test rejects. Rewriting them to the citation form would produce ungrammatical
-text, so `bridge_match` records *how* the entity surfaces instead:
+substring test rejects. `bridge_match` records *how* the entity surfaces:
 
 | `bridge_match` | en | fr | ru | ar | zh | interpretation |
 |---|---:|---:|---:|---:|---:|---|
-| `exact` | 172 | 113 | 65 | 87 | 83 | usable for verbatim substitution |
+| `exact` | 173 | 125 | 79 | 101 | 133 | usable for verbatim substitution |
 | `normalized` | 0 | 20 | 4 | 1 | 3 | case/diacritic/punctuation variant |
-| `inflected` | 0 | 30 | 96 | 82 | 40 | morphological or reordered variant |
-| `latin_untranslated` | 0 | 7 | 8 | 4 | 29 | English name retained — genuine defect |
-| `absent` | 4 | 6 | 3 | 2 | 21 | bridge missing — genuine defect |
-| **`chain_ok`** | **172** | **163** | **165** | **170** | **126** | first three |
-| | 97.7% | 92.6% | 93.8% | 96.6% | 71.6% | |
+| `inflected` | 0 | 28 | 90 | 71 | 37 | morphological or reordered variant |
+| `latin_untranslated` | 0 | 0 | 0 | 0 | 0 | English name retained — defect |
+| `absent` | 3 | 3 | 3 | 3 | 3 | bridge not stated in the source decomposition |
+| **`chain_ok`** | **173** | **173** | **173** | **173** | **173** | first three |
+| | 98.3% | 98.3% | 98.3% | 98.3% | 98.3% | |
 
-**Residual limitations.** The 4 English `absent` cases are upstream annotation quirks —
-`sub_q2` describes the bridge instead of naming it — so 172/176 is the ceiling in every
-language, not 176. Chinese is the weakest at 71.6%, driven by 29 questions that kept the
-English entity name. `inflected` is detected by shared stem prefix and character overlap, a
-heuristic: it may admit a small number of coincidental matches and miss suppletive forms.
+**Residual limitations.** Three English records (`hotpotqa_171`, `hotpotqa_315`, and
+`hotpotqa_333`) describe the bridge instead of naming it. Their aligned translations are
+also marked `absent`; inserting an entity would change the source decomposition rather than
+repair its translation. Therefore 173/176 is the honest ceiling in every language.
+`inflected` is detected by shared stem prefix and character overlap, a heuristic: it may
+admit a small number of coincidental matches and miss suppletive forms.
 Filter on `bridge_match == "exact"` if you need certainty over coverage.
 
 ### 3. Answer strings are not always in the target script
 
-Proper nouns frequently remain in Latin script after translation. Share of answers written
+Malformed mixed-script answer fragments were corrected when the target passage established
+the intended rendering (for example, `قلعة سكيب ton` → `قلعة سكيبطن` and
+`王朝重新 regrouped...` → `王朝重新集结...`). Proper nouns, callsigns, units, and acronyms such
+as `BBC`, `EPA`, `FSMA`, `Warner Music Group`, and `KUAT-TV` legitimately remain in Latin
+script. Share of answers written
 in the expected script:
 
 | Split / source | en | fr | ru | ar | zh |
@@ -140,7 +160,11 @@ sample of naturally occurring questions in those languages.
 
 ### 5. Inherited upstream limitations
 
-MuSiQue and HotpotQA distractors, annotation artifacts and known reasoning shortcuts carry
+Nine clear HotpotQA source defects were repaired in `RECORD_OVERRIDES`: `hotpotqa_260`,
+`261`, `373`, `551`, `725`, `851`, `894`, `940`, and `953`. These repairs correct mismatched
+question/answer types, false premises, polluted answer strings, and four corresponding
+support-annotation sets. The corrections are translated consistently into all five aligned
+files. Other MuSiQue and HotpotQA distractor artifacts and known reasoning shortcuts carry
 over unchanged.
 
 ## Intended use
@@ -168,7 +192,8 @@ python scripts/build.py --musique <musique_dir> --hotpot <hotpot_dir> --out data
 python scripts/validate.py
 ```
 
-`build.py` requires the **post-reorder** MuSiQue 2-hop copy, in which `answers[0]` is the
-bridging hop and `answers[1]` the answer-bearing one. A pre-reorder copy exists in which 331
-of 627 records have `answers` reversed; building from it silently inverts the hop labels
-that the dataset exists to study.
+`build.py` requires the **post-reorder** MuSiQue 2-hop copy. A manual semantic audit of its
+English passages found 16 residual records whose bridge and answer-bearing passages were
+still reversed; the builder applies the audited `[1, 0]` overrides to those records in all
+five aligned languages. A pre-reorder copy exists in which 331 of 627 records have
+`answers` reversed and must not be used.

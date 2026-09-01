@@ -13,13 +13,13 @@
 
 ---
 
-X-HOP extends [MuSiQue](https://github.com/stonybrooknlp/musique) and [HotpotQA](https://hotpotqa.github.io/) from English to French, Russian, Arabic, and Chinese. All data instances are multi-parallel.
+X-HOP extends [MuSiQue](https://github.com/stonybrooknlp/musique) and [HotpotQA](https://hotpotqa.github.io/) from English to French, Russian, Arabic, and Chinese. All data instances are multi-parallel.  
 
 
 <p align="center">
   <img src="assets/Screenshot 2026-09-01 at 12.52.46.png" alt="A two-hop XHop example with evidence in French and English" width="600">
   <br>
-  <sub>An English question answered using context in different languages.</sub>
+  <sub>An English question answered using context in different languages. See more cases in: <a href="https://vivian-my.github.io/X-Hop/assets/demo.html"></a></sub>
 </p>
 
 ## Dataset Statistics

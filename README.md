@@ -19,7 +19,7 @@ X-HOP extends [MuSiQue](https://github.com/stonybrooknlp/musique) and [HotpotQA]
 <p align="center">
   <img src="assets/Screenshot 2026-09-01 at 12.52.46.png" alt="A two-hop XHop example with evidence in French and English" width="600">
   <br>
-  <sub>An English question answered using context in different languages. See more cases in: <a href="https://vivian-my.github.io/X-Hop/assets/demo.html"></a></sub>
+  <sub>An English question answered using context in different languages. See more cases in: <a href="https://vivian-my.github.io/X-Hop/assets/demo.html"><b>Link</b></a></sub>
 </p>
 
 ## Dataset Statistics
